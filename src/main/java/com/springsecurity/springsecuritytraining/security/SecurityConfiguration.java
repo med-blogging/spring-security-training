@@ -1,21 +1,22 @@
 package com.springsecurity.springsecuritytraining.security;
 
-import com.springsecurity.springsecuritytraining.services.InMemoryUserDetailsService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.password.NoOpPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.provisioning.JdbcUserDetailsManager;
 
-import java.util.List;
+import javax.sql.DataSource;
 
 @Configuration
 public class SecurityConfiguration {
     @Bean
-    public UserDetailsService userDetailsService() {
-        UserDetails u = new SecurityUser("test", "1234", "read");
-        return new InMemoryUserDetailsService(List.of(u));
+    public UserDetailsService userDetailsService(DataSource dataSource) {
+        String userByUsernameQuery = "select username, password, enabled from users where username = ?";
+        var userDetailsManager = new JdbcUserDetailsManager(dataSource);
+        userDetailsManager.setUsersByUsernameQuery(userByUsernameQuery);
+        return userDetailsManager;
     }
     @Bean
     public PasswordEncoder passwordEncoder() {
